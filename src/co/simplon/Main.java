@@ -8,9 +8,6 @@ public class Main {
         // Représenter notre plateau de jeu
         String[][] board = new String[6][7];
 
-        // Afficher notre plateau de jeu
-        printBoard(board);
-
         // Récupérer le nom des joueurs
         Scanner scanner = new Scanner(System.in);
 
@@ -23,32 +20,174 @@ public class Main {
         boolean win = false;
         String currentPlayer = player2;
         while (!win) {
-            boolean validPlay = false;
+            int linePosition = -1;
+            int chosenColumn = -1;
+            // Ma boucle pour rejouer
             do {
-                validPlay = play(scanner, board, currentPlayer);
-            } while (!validPlay);
+                // Récupération de colonne
+                System.out.println("Dans quelle colonne veux-tu déposer ton pion ?");
+                chosenColumn = scanner.nextInt();
+                scanner.nextLine();
 
+                linePosition = play(scanner, board, currentPlayer, chosenColumn);
+            } while (linePosition < 0);
+
+
+            if (win(countConsecutiveMoveHorizontal(currentPlayer, board, linePosition, chosenColumn), 4)
+                    || win(countConsecutiveMoveVertical(currentPlayer, board, linePosition, chosenColumn), 4)
+                    || win(countConsecutiveMoveNEtoSW(currentPlayer, board, linePosition, chosenColumn), 4)
+                    || win(countConsecutiveMoveNWtoSE(currentPlayer, board, linePosition, chosenColumn), 4)) {
+                win = true;
+            }
+
+            // Mon changement de joueur si on est arrivé à jouer
             if (currentPlayer == player1) {
                 currentPlayer = player2;
             } else {
                 currentPlayer = player1;
             }
+
+            // Une fois qu'un joueur a joué, on affiche le tableau
             printBoard(board);
 
-            // win =
         }
     }
-//
-//    private static boolean winningMove(String player, String[][] board) {
-//
-//    }
 
-    private static boolean play(Scanner scanner, String[][] board, String player) {
-        boolean spaceAvailable = false;
-        // Récupération de colonne
-        System.out.println("Dans quelle colonne veux-tu déposer ton pion ?");
-        int chosenColumn = scanner.nextInt();
-        scanner.nextLine();
+    private static boolean win(int consecutiveCount, int victoryCriteria) {
+        return consecutiveCount >= victoryCriteria;
+    }
+
+    private static int countConsecutiveMoveNWtoSE(String player, String[][] board, int linePosition, int columnPosition) {
+        int consecutiveCount = 1;
+        int linePointer = linePosition;
+        int columnPointer = columnPosition;
+        boolean consecutivePlayer = true;
+
+        while (linePointer < board.length - 1 && columnPointer < board[linePosition].length - 1 && consecutivePlayer) {
+            linePointer++;
+            columnPointer++;
+            if (board[linePointer][columnPointer] == player) {
+                consecutiveCount++;
+            } else {
+                consecutivePlayer = false;
+            }
+        }
+
+        linePointer = linePosition;
+        columnPointer = columnPosition;
+        consecutivePlayer = true;
+
+        while (linePointer > 0 && columnPointer > 0 && consecutivePlayer) {
+            linePointer--;
+            columnPointer--;
+            if (board[linePointer][columnPointer] == player) {
+                consecutiveCount++;
+            } else {
+                consecutivePlayer = false;
+            }
+        }
+
+        return consecutiveCount;
+    }
+
+    private static int countConsecutiveMoveNEtoSW(String player, String[][] board, int linePosition, int columnPosition) {
+        int consecutiveCount = 1;
+        int linePointer = linePosition;
+        int columnPointer = columnPosition;
+        boolean consecutivePlayer = true;
+
+        while (linePointer > 0 && columnPointer < board[linePosition].length - 1 && consecutivePlayer) {
+            linePointer--;
+            columnPointer++;
+            if (board[linePointer][columnPointer] == player) {
+                consecutiveCount++;
+            } else {
+                consecutivePlayer = false;
+            }
+        }
+
+        linePointer = linePosition;
+        columnPointer = columnPosition;
+        consecutivePlayer = true;
+
+        while (linePointer < board.length - 1 && columnPointer > 0 && consecutivePlayer) {
+            linePointer++;
+            columnPointer--;
+            if (board[linePointer][columnPointer] == player) {
+                consecutiveCount++;
+            } else {
+                consecutivePlayer = false;
+            }
+        }
+
+        return consecutiveCount;
+    }
+
+    private static int countConsecutiveMoveVertical(String player, String[][] board, int linePosition, int columnPosition) {
+        int consecutiveCount = 1;
+        int linePointer = linePosition;
+        boolean consecutivePlayer = true;
+
+        // Je prends en compte les jetons vers le haut
+        while (linePointer > 0 && consecutivePlayer) {
+            linePointer--;
+            if (board[linePointer][columnPosition] == player) {
+                consecutiveCount++;
+            } else {
+                consecutivePlayer = false;
+            }
+        }
+
+        linePointer = linePosition;
+        consecutivePlayer = true;
+
+        while (linePointer < board.length - 1 && consecutivePlayer) {
+            linePointer++;
+            if (board[linePointer][columnPosition] == player) {
+                consecutiveCount++;
+            } else {
+                consecutivePlayer = false;
+            }
+        }
+
+        return consecutiveCount;
+    }
+
+    private static int countConsecutiveMoveHorizontal(String player, String[][] board, int linePosition, int columnPosition) {
+        int consecutiveCount = 1;
+        int columnPointer = columnPosition;
+        boolean consecutivePlayer = true;
+
+        // Je compte combien de jetons consécutifs j'ai à droite
+        while (columnPointer < board[linePosition].length - 1 && consecutivePlayer) {
+            columnPointer++;
+            if (board[linePosition][columnPointer] == player) {
+                consecutiveCount++;
+            } else {
+                consecutivePlayer = false;
+            }
+        }
+
+        // Je me replace sur la colonne du pion joué
+        columnPointer = columnPosition;
+        consecutivePlayer = true;
+
+        // Je compte combien de jetons consécutifs j'ai à gauche
+        while (columnPointer > 0 && consecutivePlayer) {
+            columnPointer--;
+            if (board[linePosition][columnPointer] == player) {
+                consecutiveCount++;
+            } else {
+                consecutivePlayer = false;
+            }
+        }
+
+        return consecutiveCount;
+    }
+
+    private static int play(Scanner scanner, String[][] board, String player, int chosenColumn) {
+        // boolean spaceAvailable = false;
+        int linePosition = -1;
 
         // Est-ce que mon numéro de colonne existe dans le tableau ?
         if (chosenColumn > board[0].length - 1 || chosenColumn < 0) {
@@ -57,20 +196,19 @@ public class Main {
         } else {
             // Si j'ai choisi une colonne valide, je dois vérifier s'il y a toujours de la place dedans
 
-            for (int lineCounter = board.length - 1; lineCounter >= 0 && !spaceAvailable; lineCounter--) {
+            for (int lineCounter = board.length - 1; lineCounter >= 0 && linePosition < 0; lineCounter--) {
                 if (board[lineCounter][chosenColumn] == null) {
                     board[lineCounter][chosenColumn] = player;
-                    spaceAvailable = true;
+                    linePosition = lineCounter;
                 }
             }
 
-            if (!spaceAvailable) {
+            if (linePosition < 0) {
                 System.out.println("Tu t'es trompé, t'as choisi un colonne pleine !");
             }
         }
 
-        return spaceAvailable;
-        // Si le numéro de colonne est valide est-ce que la colonne a encore de la place ?
+        return linePosition;
     }
 
     private static void printBoard(String[][] board) {
