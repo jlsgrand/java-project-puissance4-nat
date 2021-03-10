@@ -11,28 +11,36 @@ public class Main {
         // Récupérer le nom des joueurs
         Scanner scanner = new Scanner(System.in);
 
+        // Demander le nom des joueurs
         System.out.println("Comment s'appelle le joueur 1 ?");
         String player1 = scanner.nextLine();
 
         System.out.println("Comment s'appelle le joueur 2 ?");
         String player2 = scanner.nextLine();
 
+        // Au départ personne n'a gagné
         boolean win = false;
+
+        // On décide arbitrairement que c'est le joueur 2 qui commence
         String currentPlayer = player2;
+
+        // Tant que personne n'a gagné, on boucle
         while (!win) {
             int linePosition = -1;
             int chosenColumn = -1;
-            // Ma boucle pour rejouer
+            // Tant que l'utilisateur ne donne pas une colonne valide, on lui redemande de jouer
             do {
                 // Récupération de colonne
                 System.out.println("Dans quelle colonne veux-tu déposer ton pion ?");
                 chosenColumn = scanner.nextInt();
                 scanner.nextLine();
 
-                linePosition = play(scanner, board, currentPlayer, chosenColumn);
+                // On appelle la fonction play pour jouer (si elle nous renvoie un chiffre positif, alors c'est ok, sinon on doit rejouer)
+                linePosition = play(board, currentPlayer, chosenColumn);
             } while (linePosition < 0);
 
 
+            // Le joueur courant gagne s'il aligne 4 pions horizontalement, verticalement ou en diagonale
             if (win(countConsecutiveMoveHorizontal(currentPlayer, board, linePosition, chosenColumn), 4)
                     || win(countConsecutiveMoveVertical(currentPlayer, board, linePosition, chosenColumn), 4)
                     || win(countConsecutiveMoveNEtoSW(currentPlayer, board, linePosition, chosenColumn), 4)
@@ -40,20 +48,21 @@ public class Main {
                 win = true;
             }
 
-            // Mon changement de joueur si on est arrivé à jouer
+            // On change de joueur si on est arrivé à jouer
             if (currentPlayer == player1) {
                 currentPlayer = player2;
             } else {
                 currentPlayer = player1;
             }
 
-            // Une fois qu'un joueur a joué, on affiche le tableau
+            // Enfin, on affiche le tableau
             printBoard(board);
 
         }
     }
 
     private static boolean win(int consecutiveCount, int victoryCriteria) {
+        // Je gagne si le consecutive count est supérieur ou égal au critère de victoire
         return consecutiveCount >= victoryCriteria;
     }
 
@@ -63,6 +72,7 @@ public class Main {
         int columnPointer = columnPosition;
         boolean consecutivePlayer = true;
 
+        // Je pars de la position jouée et je descend vers la droite
         while (linePointer < board.length - 1 && columnPointer < board[linePosition].length - 1 && consecutivePlayer) {
             linePointer++;
             columnPointer++;
@@ -73,10 +83,12 @@ public class Main {
             }
         }
 
+        // Je réinitialise ma position
         linePointer = linePosition;
         columnPointer = columnPosition;
         consecutivePlayer = true;
 
+        // Je pars de la position jouée et je remonte vers la gauche
         while (linePointer > 0 && columnPointer > 0 && consecutivePlayer) {
             linePointer--;
             columnPointer--;
@@ -96,6 +108,7 @@ public class Main {
         int columnPointer = columnPosition;
         boolean consecutivePlayer = true;
 
+        // Je pars de la position jouée et je remonte vers la droite
         while (linePointer > 0 && columnPointer < board[linePosition].length - 1 && consecutivePlayer) {
             linePointer--;
             columnPointer++;
@@ -106,10 +119,12 @@ public class Main {
             }
         }
 
+        // Je réinitialise ma position
         linePointer = linePosition;
         columnPointer = columnPosition;
         consecutivePlayer = true;
 
+        // Je pars de la position jouée et je descend vers la gauche
         while (linePointer < board.length - 1 && columnPointer > 0 && consecutivePlayer) {
             linePointer++;
             columnPointer--;
@@ -128,7 +143,7 @@ public class Main {
         int linePointer = linePosition;
         boolean consecutivePlayer = true;
 
-        // Je prends en compte les jetons vers le haut
+        // Je pars de la position jouée et je remonte à la verticale
         while (linePointer > 0 && consecutivePlayer) {
             linePointer--;
             if (board[linePointer][columnPosition] == player) {
@@ -138,9 +153,11 @@ public class Main {
             }
         }
 
+        // Je réinitialise ma position
         linePointer = linePosition;
         consecutivePlayer = true;
 
+        // Je pars de la position jouée et je descends à la verticale
         while (linePointer < board.length - 1 && consecutivePlayer) {
             linePointer++;
             if (board[linePointer][columnPosition] == player) {
@@ -158,7 +175,7 @@ public class Main {
         int columnPointer = columnPosition;
         boolean consecutivePlayer = true;
 
-        // Je compte combien de jetons consécutifs j'ai à droite
+        // Je pars de la position jouée et je vais à droite
         while (columnPointer < board[linePosition].length - 1 && consecutivePlayer) {
             columnPointer++;
             if (board[linePosition][columnPointer] == player) {
@@ -168,11 +185,11 @@ public class Main {
             }
         }
 
-        // Je me replace sur la colonne du pion joué
+        // Je réinitialise ma position
         columnPointer = columnPosition;
         consecutivePlayer = true;
 
-        // Je compte combien de jetons consécutifs j'ai à gauche
+        // Je pars de la position jouée et je vais à gauche
         while (columnPointer > 0 && consecutivePlayer) {
             columnPointer--;
             if (board[linePosition][columnPointer] == player) {
@@ -185,8 +202,7 @@ public class Main {
         return consecutiveCount;
     }
 
-    private static int play(Scanner scanner, String[][] board, String player, int chosenColumn) {
-        // boolean spaceAvailable = false;
+    private static int play(String[][] board, String player, int chosenColumn) {
         int linePosition = -1;
 
         // Est-ce que mon numéro de colonne existe dans le tableau ?
@@ -222,7 +238,7 @@ public class Main {
                 if (board[lineCounter][columnCounter] != null) {
                     box = board[lineCounter][columnCounter];
                 }
-                //String box = (board[lineCounter][columnCounter] != null) ? board[lineCounter][columnCounter] : "";
+
                 System.out.printf("[%6s]", box);
             }
             // J'affiche un retour à la ligne une fois que j'ai affiché toutes mes cases de la ligne
